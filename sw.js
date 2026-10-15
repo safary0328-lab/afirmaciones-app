@@ -1,4 +1,4 @@
-const CACHE='affirm-v6';
+const CACHE='affirm-v7';
 const ASSETS=['./index.html','./manifest.json','./musica_loop.mp3'];
 self.addEventListener('install',e=>{
 e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));

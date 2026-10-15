@@ -49,13 +49,13 @@ transition:background 1.5s ease;color:var(--text);text-align:center;padding:20px
 .header h1{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;letter-spacing:2px;text-transform:uppercase}
 
 /* Day counter */
-.day-counter{font-size:0.85rem;opacity:0.85;letter-spacing:3px;font-weight:400;color:var(--text-secondary)}
+.day-counter{font-size:0.85rem;opacity:0.85;letter-spacing:3px;font-weight:400;color:var(--cat-accent,var(--text-secondary));transition:color 0.8s ease}
 
 /* Affirmation card */
-.card{background:var(--card-bg);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
+.card{background:linear-gradient(var(--card-bg),var(--card-bg)),var(--cat-gradient);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
 border:1px solid var(--card-border);border-radius:24px;padding:40px 30px;
 min-height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;
-width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5),inset 0 1px 0 rgba(var(--star-color),0.08);transition:all 0.5s ease;position:relative;overflow:hidden}
+width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.5),0 0 70px -15px var(--cat-glow,rgba(100,100,255,0.25)),inset 0 1px 0 rgba(var(--star-color),0.08);transition:transform 0.4s ease,opacity 0.3s ease,background 0.7s ease,box-shadow 0.7s ease;position:relative;overflow:hidden}
 .card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
 background:radial-gradient(circle,rgba(var(--star-color),0.05) 0%,transparent 70%);
 animation:shimmer 8s linear infinite}
@@ -66,7 +66,7 @@ line-height:1.7;letter-spacing:0.5px;position:relative;z-index:1;
 text-shadow:0 2px 15px rgba(0,0,0,0.5),0 0 30px rgba(0,0,0,0.3);font-style:italic;color:var(--text)}
 .affirmation-text::before{content:'"';font-size:3rem;opacity:0.3;position:absolute;
 top:-20px;left:-10px;font-family:serif}
-.author{font-size:0.75rem;opacity:0.7;margin-top:15px;letter-spacing:2px;font-weight:400;position:relative;z-index:1;color:var(--accent-color)}
+.author{font-size:0.75rem;opacity:0.7;margin-top:15px;letter-spacing:2px;font-weight:400;position:relative;z-index:1;color:var(--cat-accent,var(--accent-color));transition:color 0.8s ease}
 
 /* Buttons */
 .btn-row{display:flex;gap:15px;flex-wrap:wrap;justify-content:center}
@@ -129,8 +129,8 @@ animation:pulse-glow 2s ease-in-out infinite}
 .card.speaking{animation:card-pulse 2s ease-in-out infinite;
 box-shadow:0 0 30px rgba(100,100,255,0.3),0 8px 40px rgba(0,0,0,0.5)}
 @keyframes card-pulse{
-0%,100%{transform:scale(1);box-shadow:0 0 30px rgba(100,100,255,0.3),0 8px 40px rgba(0,0,0,0.5)}
-50%{transform:scale(1.02);box-shadow:0 0 50px rgba(100,100,255,0.5),0 8px 40px rgba(0,0,0,0.5)}
+0%,100%{transform:rotate(var(--card-rot,0deg)) scale(1);box-shadow:0 0 30px rgba(100,100,255,0.3),0 8px 40px rgba(0,0,0,0.5)}
+50%{transform:rotate(var(--card-rot,0deg)) scale(1.02);box-shadow:0 0 50px rgba(100,100,255,0.5),0 8px 40px rgba(0,0,0,0.5)}
 }
 @keyframes pulse-glow{
 0%,100%{box-shadow:0 0 10px rgba(100,100,255,0.3)}
@@ -333,6 +333,81 @@ display:flex;flex-direction:column;align-items:center;gap:8px}
 .search-input { flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--btn-border); border-radius: 10px; padding: 12px 15px; color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 0.9rem; outline: none; }
 .search-input:focus { border-color: var(--accent-color); }
 
+/* ═══════════════════════════════════════════
+   VISUAL UPGRADE — Category Gradients, Card Deck,
+   Typing Effect, Scroll Reveal
+   ═══════════════════════════════════════════ */
+
+/* --- Category gradient custom properties (set by JS) --- */
+:root{
+--cat-gradient:linear-gradient(135deg,rgba(60,40,140,0.75),rgba(110,60,210,0.55));
+--cat-accent:rgba(175,165,255,0.95);
+--cat-glow:rgba(120,100,255,0.35);
+}
+
+/* --- Stacked card deck --- */
+.card-deck{position:relative;width:100%}
+.deck-preview{position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;
+pointer-events:none;will-change:transform,opacity;
+transform:rotate(var(--card-rot,0deg)) translateY(var(--deck-y,7px)) scale(var(--deck-scale,0.965));
+transition:transform 0.4s ease,opacity 0.3s ease,background 0.7s ease}
+#cardPreview2{z-index:1}
+#card{position:relative;z-index:3;will-change:transform,opacity;
+transform:rotate(var(--card-rot,0deg)) translateY(var(--deck-y,0px)) scale(var(--deck-scale,1))}
+.deck-preview-text{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-style:italic;
+line-height:1.5;opacity:0.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;
+overflow:hidden;filter:blur(1.2px);position:relative;z-index:1;max-width:100%}
+.deck-preview-author{font-size:0.68rem;letter-spacing:2px;margin-top:12px;opacity:0.45;
+position:relative;z-index:1}
+@keyframes deckEnter{
+from{opacity:0;transform:rotate(var(--card-rot,0deg)) translateY(40px) scale(0.94)}
+to{opacity:1;transform:rotate(var(--card-rot,0deg)) translateY(0) scale(1)}}
+#card.deck-enter{animation:deckEnter 0.7s cubic-bezier(0.22,1,0.36,1)}
+.deck-exit-clone{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;
+pointer-events:none;transform:rotate(var(--card-rot,0deg))}
+.deck-exit-clone.card-exit{animation:cardExit 0.4s ease forwards}
+@keyframes cardExit{
+to{opacity:0;transform:rotate(calc(var(--card-rot,0deg) + 14deg)) translateY(-130%) scale(0.88)}}
+
+/* --- Accelerated category accent on buttons & headings --- */
+.btn:hover,.btn-tts:hover,.rec-btn:hover,.notify-btn:hover{border-color:var(--cat-accent,var(--btn-border));box-shadow:0 0 18px var(--cat-glow,rgba(100,100,255,0.2))}
+.header h1{text-shadow:0 0 30px var(--cat-glow,rgba(100,100,255,0.3))}
+.cat-filter-label{color:var(--cat-accent,var(--text));transition:color 0.8s ease}
+.cat-btn{border-left:4px solid var(--cat-accent,var(--btn-border));transition:all 0.3s ease}
+.cat-btn:hover{border-color:var(--cat-accent,var(--glow-color))}
+.cat-btn.active-cat{background:var(--cat-gradient);border-color:var(--cat-accent,var(--glow-color))}
+
+/* --- Typing rotation effect (hero) --- */
+.hero-typing{display:flex;align-items:baseline;justify-content:center;gap:9px;
+font-family:'Cormorant Garamond',serif;font-size:1.5rem;letter-spacing:1px;font-weight:300;
+margin:-16px 0 -12px;min-height:1.5em}
+.hero-prefix{opacity:0.6;font-style:italic}
+.typing-text{font-style:italic;font-weight:600;color:var(--cat-accent,var(--accent-color));
+transition:color 0.8s ease;min-height:1em}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+.typing-text{background:var(--cat-gradient);-webkit-background-clip:text;background-clip:text;
+-webkit-text-fill-color:transparent;color:transparent;
+filter:drop-shadow(0 0 14px var(--cat-glow,rgba(100,100,255,0.3)))}}
+.typing-cursor{font-weight:300;color:var(--cat-accent,var(--accent-color));margin-left:-4px;
+animation:cursorBlink 0.9s step-end infinite;transition:color 0.8s ease}
+@keyframes cursorBlink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* --- Scroll reveal (IntersectionObserver) --- */
+.reveal{opacity:0;transform:translateY(30px);
+transition:opacity 0.7s cubic-bezier(0.22,1,0.36,1),transform 0.7s cubic-bezier(0.22,1,0.36,1)}
+.reveal.revealed{opacity:1;transform:translateY(0)}
+
+/* --- Motion & small screens --- */
+@media (prefers-reduced-motion:reduce){
+.reveal{opacity:1;transform:none;transition:none}
+.typing-cursor{animation:none}
+#card.deck-enter,.deck-exit-clone.card-exit{animation:none}
+}
+@media(max-width:480px){
+.hero-typing{font-size:1.3rem;margin:-14px 0 -10px}
+.deck-preview-text{font-size:0.95rem}
+}
+
 </style>
 </head>
 <body>
@@ -346,12 +421,27 @@ display:flex;flex-direction:column;align-items:center;gap:8px}
     <span class="streak-badge" id="streakBadge" title="Días consecutivos usando la app">🔥 0 días</span>
   </div>
   
+  <div class="hero-typing" id="heroTyping">
+    <span class="hero-prefix">Hoy quiero</span>
+    <span class="typing-text" id="typingText"></span><span class="typing-cursor" id="typingCursor">|</span>
+  </div>
+
   <div class="day-counter" id="dayCounter">DÍA 1 DE 539</div>
-  
-  <div class="card fade-in" id="card">
-    <button class="fav-btn" id="favBtn" onclick="toggleFavorite()" aria-label="Agregar a favoritos">🤍</button>
-    <div class="affirmation-text" id="affirmation">Cargando...</div>
-    <div class="author" id="author"></div>
+
+  <div class="card-deck" id="cardDeck">
+    <div class="card deck-preview" id="cardPreview2" aria-hidden="true">
+      <div class="deck-preview-text" id="previewText2"></div>
+      <div class="deck-preview-author" id="previewAuthor2"></div>
+    </div>
+    <div class="card deck-preview" id="cardPreview1" aria-hidden="true">
+      <div class="deck-preview-text" id="previewText1"></div>
+      <div class="deck-preview-author" id="previewAuthor1"></div>
+    </div>
+    <div class="card deck-card deck-enter" id="card">
+      <button class="fav-btn" id="favBtn" onclick="toggleFavorite()" aria-label="Agregar a favoritos">🤍</button>
+      <div class="affirmation-text" id="affirmation">Cargando...</div>
+      <div class="author" id="author"></div>
+    </div>
   </div>
   
   <div class="btn-row">
@@ -3106,14 +3196,14 @@ showAffirmation(currentDay);
 }
 
 function showAffirmation(index){
-const card=document.getElementById('card');
 const arr=getCurrentArray();
 const a=arr[index];
 document.getElementById('affirmation').textContent=a.t;
 document.getElementById('author').textContent='— '+a.a;
 const label=currentMode==='affirm'?'AFIRMACIÓN':'ORACIÓN';
 document.getElementById('dayCounter').textContent=`${label} ${index+1} DE ${arr.length}`;
-card.className='card fade-in';
+applyCategoryTheme(a.c||(currentMode==='prayer'?'ORACIONES':a.a||''));
+animateDeck(index);
 changeBackground(index);
 localStorage.setItem('affirm_current_day',index);
 }
