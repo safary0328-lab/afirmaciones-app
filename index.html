@@ -310,6 +310,29 @@ display:flex;flex-direction:column;align-items:center;gap:8px}
 .fav-item .fav-remove{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text);cursor:pointer;font-size:1rem;opacity:0.5}
 .fav-item .fav-remove:hover{opacity:1}
 .fav-empty{text-align:center;opacity:0.5;font-size:0.9rem;padding:40px}
+
+/* Journal & Search Panels */
+.journal-panel, .search-panel {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--panel-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+  z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: flex-start;
+  padding: 30px 20px; gap: 15px; overflow-y: auto;
+}
+.journal-panel.show, .search-panel.show { display: flex; }
+.journal-panel h2, .search-panel h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 300; margin-bottom: 5px; }
+.journal-box { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 12px; background: var(--card-bg); border: 1px solid var(--card-border); padding: 20px; border-radius: 16px; }
+.journal-box p { font-size: 0.9rem; font-style: italic; opacity: 0.9; line-height: 1.4; border-left: 3px solid var(--accent-color); padding-left: 10px; margin: 0; }
+.journal-textarea { width: 100%; height: 100px; background: rgba(0,0,0,0.2); border: 1px solid var(--btn-border); border-radius: 10px; padding: 10px; color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 0.85rem; resize: vertical; outline: none; }
+.journal-textarea:focus { border-color: var(--accent-color); }
+.journal-list, .search-results-list { width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 10px; }
+.journal-item, .search-item { background: var(--btn-bg); border: 1px solid var(--btn-border); border-radius: 12px; padding: 12px 15px; display: flex; flex-direction: column; gap: 6px; cursor: pointer; transition: all 0.3s; }
+.journal-item:hover, .search-item:hover { background: var(--btn-hover); border-color: var(--glow-color); }
+.journal-date { font-size: 0.7rem; opacity: 0.6; }
+.journal-note { font-size: 0.85rem; line-height: 1.4; color: var(--accent-color); }
+.search-input-wrap { width: 100%; max-width: 500px; display: flex; gap: 10px; }
+.search-input { flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--btn-border); border-radius: 10px; padding: 12px 15px; color: var(--text); font-family: 'Montserrat', sans-serif; font-size: 0.9rem; outline: none; }
+.search-input:focus { border-color: var(--accent-color); }
+
 </style>
 </head>
 <body>
@@ -347,6 +370,8 @@ display:flex;flex-direction:column;align-items:center;gap:8px}
     <button class="btn" onclick="shareAffirmation()"><span class="btn-icon">📤</span> Compartir</button>
     <button class="rec-btn" id="recBtn" onclick="toggleRecording()" aria-label="Grabar voz"><span class="btn-icon">🎙️</span> <span id="recLabel">Grabar</span></button>
     <button class="btn-tts" id="ttsBtn" onclick="toggleTTS()"><span class="btn-icon">🔊</span> <span id="ttsLabel">Escuchar</span></button>
+        <button class="btn" onclick="toggleJournalPanel()" id="journalBtn"><span class="btn-icon">📝</span> Diario</button>
+    <button class="btn" onclick="toggleSearchPanel()" id="searchBtn"><span class="btn-icon">🔍</span> Buscar</button>
     <button class="btn" onclick="toggleCategories()" id="catBtn"><span class="btn-icon">🏷️</span> Categorías</button>
         <button class="btn" onclick="toggleStatsPanel()"><span class="btn-icon">📊</span> Stats</button>
     <button class="btn" onclick="toggleAchPanel()"><span class="btn-icon">🏆</span> Logros</button>
@@ -630,6 +655,28 @@ display:flex;flex-direction:column;align-items:center;gap:8px}
     <div class="stat-card"><span class="stat-value" id="statBest">0</span><span class="stat-label">MEJOR RACHA</span></div>
     <div class="stat-card"><span class="stat-value" id="statTotal">0</span><span class="stat-label">TOTAL DISPONIBLES</span></div>
   </div>
+</div>
+
+
+<div class="journal-panel" id="journalPanel">
+  <button class="close-btn" onclick="toggleJournalPanel()">×</button>
+  <h2>📝 Diario de Reflexión</h2>
+  <div class="journal-box">
+    <p id="journalAffirmationText">"Cargando..."</p>
+    <textarea class="journal-textarea" id="journalInput" placeholder="Escribe aquí tu reflexión, sentimiento o cómo vas a aplicar esta verdad en tu vida hoy..."></textarea>
+    <button class="notify-btn" onclick="saveJournalEntry()" style="margin-top:0;">💾 Guardar Reflexión</button>
+  </div>
+  <h3 style="font-size:1.1rem;margin-top:10px;font-weight:300;">Mis Reflexiones Guardadas</h3>
+  <div class="journal-list" id="journalList"></div>
+</div>
+
+<div class="search-panel" id="searchPanel">
+  <button class="close-btn" onclick="toggleSearchPanel()">×</button>
+  <h2>🔍 Buscar Afirmación o Cita</h2>
+  <div class="search-input-wrap">
+    <input type="text" class="search-input" id="searchInput" placeholder="Escribe una palabra (ej. paz, dinero, Dios, Neville)..." oninput="performSearch(this.value)">
+  </div>
+  <div class="search-results-list" id="searchResults"></div>
 </div>
 
 <div class="fav-panel" id="favPanel">
@@ -4894,7 +4941,7 @@ function loadTextSize(){
 document.addEventListener('keydown',function(e){
   // Escape closes panels
   if(e.key==='Escape'){
-    const panels=['settings','categoriesOverlay','shareModal','musicPanel','themePanel','favPanel','statsPanel','achPanel'];
+    const panels=['settings','categoriesOverlay','shareModal','musicPanel','themePanel','favPanel','statsPanel','achPanel','journalPanel','searchPanel'];
     panels.forEach(id=>{
       const el=document.getElementById(id);
       if(el&&el.classList.contains('show'))el.classList.remove('show');
@@ -5454,6 +5501,137 @@ init();
 showOnboarding();
 applyTranslations();
 loadTextSize();
+
+// ═══════════════════════════════════════════
+// DIARIO DE REFLEXIÓN & BUSCADOR SYSTEM
+// ═══════════════════════════════════════════
+function toggleJournalPanel() {
+  const panel = document.getElementById('journalPanel');
+  if (!panel) return;
+  const isShowing = panel.classList.contains('show');
+  if (!isShowing) {
+    const textEl = document.getElementById('affirmation');
+    const authorEl = document.getElementById('author');
+    const affText = textEl ? textEl.innerText : '';
+    const autText = authorEl ? authorEl.innerText : '';
+    document.getElementById('journalAffirmationText').innerText = `"${affText}" ${autText ? '- ' + autText : ''}`;
+    document.getElementById('journalInput').value = '';
+    renderJournalList();
+    panel.classList.add('show');
+  } else {
+    panel.classList.remove('show');
+  }
+}
+
+function saveJournalEntry() {
+  const input = document.getElementById('journalInput');
+  const text = input ? input.value.trim() : '';
+  if (!text) {
+    showToast('Escribe una reflexión antes de guardar');
+    return;
+  }
+  const affText = document.getElementById('journalAffirmationText').innerText;
+  const entries = JSON.parse(localStorage.getItem('affirm_journal') || '[]');
+  entries.unshift({
+    date: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    affirmation: affText,
+    note: text
+  });
+  localStorage.setItem('affirm_journal', JSON.stringify(entries));
+  input.value = '';
+  renderJournalList();
+  showToast('✨ Reflexión guardada en tu diario');
+}
+
+function renderJournalList() {
+  const listEl = document.getElementById('journalList');
+  if (!listEl) return;
+  const entries = JSON.parse(localStorage.getItem('affirm_journal') || '[]');
+  if (entries.length === 0) {
+    listEl.innerHTML = '<p style="text-align:center;opacity:0.6;font-size:0.85rem;">Aún no tienes reflexiones guardadas.</p>';
+    return;
+  }
+  listEl.innerHTML = entries.map((item, index) => `
+    <div class="journal-item">
+      <div class="journal-date">📅 ${item.date}</div>
+      <p style="font-size:0.8rem;opacity:0.8;margin:0;font-style:italic;">${item.affirmation}</p>
+      <div class="journal-note">💭 ${item.note}</div>
+      <button onclick="deleteJournalEntry(${index})" style="background:none;border:none;color:rgba(255,100,100,0.8);font-size:0.75rem;text-align:right;cursor:pointer;padding:0;">🗑️ Eliminar</button>
+    </div>
+  `).join('');
+}
+
+function deleteJournalEntry(index) {
+  const entries = JSON.parse(localStorage.getItem('affirm_journal') || '[]');
+  entries.splice(index, 1);
+  localStorage.setItem('affirm_journal', JSON.stringify(entries));
+  renderJournalList();
+  showToast('Reflexión eliminada');
+}
+
+function toggleSearchPanel() {
+  const panel = document.getElementById('searchPanel');
+  if (!panel) return;
+  const isShowing = panel.classList.contains('show');
+  if (!isShowing) {
+    panel.classList.add('show');
+    const input = document.getElementById('searchInput');
+    if (input) {
+      input.focus();
+      performSearch(input.value);
+    }
+  } else {
+    panel.classList.remove('show');
+  }
+}
+
+function performSearch(query) {
+  const resultsEl = document.getElementById('searchResults');
+  if (!resultsEl) return;
+  q = query.trim().toLowerCase();
+  if (q.length < 2) {
+    resultsEl.innerHTML = '<p style="text-align:center;opacity:0.6;font-size:0.85rem;">Escribe al menos 2 letras para buscar...</p>';
+    return;
+  }
+  
+  // Search in affirmations array
+  const matches = [];
+  const listToSearch = typeof currentList !== 'undefined' ? currentList : (typeof affirmations !== 'undefined' ? affirmations : []);
+  
+  listToSearch.forEach((item, idx) => {
+    const text = (item.t || '').toLowerCase();
+    const author = (item.a || '').toLowerCase();
+    const cat = (item.c || '').toLowerCase();
+    if (text.includes(q) || author.includes(q) || cat.includes(q)) {
+      matches.push({ item, idx });
+    }
+  });
+
+  if (matches.length === 0) {
+    resultsEl.innerHTML = '<p style="text-align:center;opacity:0.6;font-size:0.85rem;">No se encontraron coincidencias.</p>';
+    return;
+  }
+
+  resultsEl.innerHTML = matches.slice(0, 30).map(m => `
+    <div class="search-item" onclick="goToSearchResult(${m.idx})">
+      <p style="margin:0;font-size:0.9rem;">"${m.item.t}"</p>
+      <div style="display:flex;justify-content:space-between;font-size:0.75rem;opacity:0.7;margin-top:4px;">
+        <span>👤 ${m.item.a || 'Desconocido'}</span>
+        <span>🏷️ ${m.item.c || 'General'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function goToSearchResult(index) {
+  if (typeof currentIndex !== 'undefined') {
+    currentIndex = index;
+    if (typeof showAffirmation === 'function') showAffirmation(currentIndex);
+    toggleSearchPanel();
+    showToast('✨ Afirmación cargada');
+  }
+}
+
 </script>
 </body>
 </html>
